@@ -32,7 +32,7 @@ jobs:
         
         PKG_NAME="com.aistudio.dompetku.mrvqtz"
         
-        echo '{"project_info":{"project_number":"123","project_id":"dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","android_client_info":{"package_name":"'$PKG_NAME'"}},"oauth_client":[{"client_id":"dummy_client_id","client_type":3}]}],"configuration_version":"1"}' > app/google-services.json
+        echo '{"project_info":{"project_number":"123","project_id":"dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","android_client_info":{"package_name":"'$PKG_NAME'"}},"oauth_client":[{"client_id":"dummy_client_id","client_type":3}],"api_key":[{"current_key":"dummy_api_key"}]}],"configuration_version":"1"}' > app/google-services.json
         
         mkdir -p app/src/main/res/values
         echo '<resources><string name="default_web_client_id">dummy_client_id</string></resources>' > app/src/main/res/values/strings_dummy.xml
