@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Mengizinkan kamu menekan tombol build secara manual
+  workflow_dispatch: 
 
 jobs:
   build:
