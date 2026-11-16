@@ -26,6 +26,16 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Create missing Keystore and Firebase dummy files
+      run: |
+        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+        
+        PKG_NAME=$(grep -hroP '(applicationId|namespace)\s*=?\s*"\K[^"]+' app/ | head -n 1 || echo "com.example.auth")
+        echo '{"project_info":{"project_number":"123","project_id":"dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:abc","android_client_info":{"package_name":"'$PKG_NAME'"}},"oauth_client":[{"client_id":"dummy_client_id","client_type":3}]}],"configuration_version":"1"}' > app/google-services.json
+        
+        mkdir -p app/src/main/res/values
+        echo '<resources><string name="default_web_client_id">dummy_client_id</string></resources>' > app/src/main/res/values/strings_dummy.xml
+
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
