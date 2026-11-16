@@ -1,0 +1,220 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A personal finance transaction entry (income, expense, or savings).",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner user UID."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense", "savings"],
+          "description": "Transaction cashflow pillar."
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Positive amount in Indonesian Rupiah (IDR)."
+        },
+        "categoryName": {
+          "type": "string",
+          "description": "Display name of the category."
+        },
+        "categoryIcon": {
+          "type": "string",
+          "description": "Icon identifier key for the category."
+        },
+        "categoryColorHex": {
+          "type": "string",
+          "description": "Hex color string (#RRGGBB) for the category badge."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note describing the transaction."
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO local date string YYYY-MM-DD."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "type",
+        "amount",
+        "categoryName",
+        "categoryIcon",
+        "categoryColorHex",
+        "note",
+        "date",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomCategory": {
+      "title": "CustomCategory",
+      "description": "User-defined transaction category with custom icon and color.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner user UID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Category display name."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense", "savings"],
+          "description": "Transaction type this category belongs to."
+        },
+        "iconKey": {
+          "type": "string",
+          "description": "Icon identifier key chosen by the user."
+        },
+        "colorHex": {
+          "type": "string",
+          "description": "Hex color string (#RRGGBB) chosen by the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "type",
+        "iconKey",
+        "colorHex",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "RecurringTransaction": {
+      "title": "RecurringTransaction",
+      "description": "Scheduled recurring transaction with customizable H-N notification reminder.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner user UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Reminder title (e.g., Tagihan Listrik PLN or Gaji Bulanan)."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense", "savings"],
+          "description": "Transaction cashflow pillar."
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Expected amount in IDR."
+        },
+        "categoryName": {
+          "type": "string",
+          "description": "Category display name."
+        },
+        "categoryIcon": {
+          "type": "string",
+          "description": "Category icon identifier key."
+        },
+        "categoryColorHex": {
+          "type": "string",
+          "description": "Category hex color (#RRGGBB)."
+        },
+        "frequency": {
+          "type": "string",
+          "enum": ["monthly", "weekly"],
+          "description": "Recurrence frequency."
+        },
+        "nextDueDate": {
+          "type": "string",
+          "description": "Next transaction date in YYYY-MM-DD."
+        },
+        "reminderDaysBefore": {
+          "type": "integer",
+          "description": "Number of days before due date to trigger reminder (0 to 14)."
+        },
+        "reminderHour": {
+          "type": "integer",
+          "description": "Hour of day (0-23) to fire notification."
+        },
+        "reminderMinute": {
+          "type": "integer",
+          "description": "Minute of hour (0-59) to fire notification."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the notification reminder is active."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "type",
+        "amount",
+        "categoryName",
+        "categoryIcon",
+        "categoryColorHex",
+        "frequency",
+        "nextDueDate",
+        "reminderDaysBefore",
+        "reminderHour",
+        "reminderMinute",
+        "enabled",
+        "note",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "User-scoped financial transactions."
+    },
+    "/users/{userId}/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/CustomCategory" },
+      "description": "User-scoped custom transaction categories."
+    },
+    "/users/{userId}/recurringTransactions/{recurringId}": {
+      "schema": { "$ref": "#/entities/RecurringTransaction" },
+      "description": "User-scoped recurring transaction reminders."
+    }
+  }
+}

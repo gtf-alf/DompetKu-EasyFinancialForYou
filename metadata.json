@@ -1,0 +1,6 @@
+{
+  "name": "DompetKu",
+  "description": "Aplikasi pelacak keuangan pribadi untuk mencatat pemasukan, pengeluaran, tabungan, kategori kustom, dan pengingat transaksi berulang.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

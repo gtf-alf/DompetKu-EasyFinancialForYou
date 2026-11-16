@@ -1,0 +1,179 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidType(t) {
+      return t is string && t in ['income', 'expense', 'savings'];
+    }
+
+    function isValidColorHex(c) {
+      return c is string && c.size() == 7 && c.matches('^#[0-9A-Fa-f]{6}$');
+    }
+
+    function isValidIsoDate(d) {
+      return d is string && d.size() == 10 && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function isValidTransaction(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             isValidType(data.type) &&
+             data.amount is int && data.amount > 0 && data.amount <= 1000000000000 &&
+             data.categoryName is string && data.categoryName.size() >= 1 && data.categoryName.size() <= 60 &&
+             data.categoryIcon is string && data.categoryIcon.size() >= 1 && data.categoryIcon.size() <= 40 &&
+             isValidColorHex(data.categoryColorHex) &&
+             data.note is string && data.note.size() <= 200 &&
+             isValidIsoDate(data.date);
+    }
+
+    function isValidCustomCategory(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 50 &&
+             isValidType(data.type) &&
+             data.iconKey is string && data.iconKey.size() >= 1 && data.iconKey.size() <= 40 &&
+             isValidColorHex(data.colorHex);
+    }
+
+    function isValidRecurringTransaction(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 80 &&
+             isValidType(data.type) &&
+             data.amount is int && data.amount > 0 && data.amount <= 1000000000000 &&
+             data.categoryName is string && data.categoryName.size() >= 1 && data.categoryName.size() <= 60 &&
+             data.categoryIcon is string && data.categoryIcon.size() >= 1 && data.categoryIcon.size() <= 40 &&
+             isValidColorHex(data.categoryColorHex) &&
+             data.frequency is string && data.frequency in ['monthly', 'weekly'] &&
+             isValidIsoDate(data.nextDueDate) &&
+             data.reminderDaysBefore is int && data.reminderDaysBefore >= 0 && data.reminderDaysBefore <= 14 &&
+             data.reminderHour is int && data.reminderHour >= 0 && data.reminderHour <= 23 &&
+             data.reminderMinute is int && data.reminderMinute >= 0 && data.reminderMinute <= 59 &&
+             data.enabled is bool &&
+             data.note is string && data.note.size() <= 200;
+    }
+
+    match /users/{userId}/transactions/{transactionId} {
+      allow list: if isOwner(userId);
+      allow get, delete: if isOwner(userId) && isValidId(transactionId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(transactionId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'type', 'amount', 'categoryName',
+                         'categoryIcon', 'categoryColorHex', 'note', 'date',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'type', 'amount', 'categoryName',
+                         'categoryIcon', 'categoryColorHex', 'note', 'date',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidTransaction(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(transactionId) &&
+                       isValidTransaction(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'type', 'amount', 'categoryName', 'categoryIcon',
+                         'categoryColorHex', 'note', 'date', 'updatedAt'
+                       ]);
+    }
+
+    match /users/{userId}/categories/{categoryId} {
+      allow list: if isOwner(userId);
+      allow get, delete: if isOwner(userId) && isValidId(categoryId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(categoryId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'name', 'type', 'iconKey', 'colorHex',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'name', 'type', 'iconKey', 'colorHex',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidCustomCategory(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(categoryId) &&
+                       isValidCustomCategory(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'name', 'type', 'iconKey', 'colorHex', 'updatedAt'
+                       ]);
+    }
+
+    match /users/{userId}/recurringTransactions/{recurringId} {
+      allow list: if isOwner(userId);
+      allow get, delete: if isOwner(userId) && isValidId(recurringId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(recurringId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'title', 'type', 'amount', 'categoryName',
+                         'categoryIcon', 'categoryColorHex', 'frequency',
+                         'nextDueDate', 'reminderDaysBefore', 'reminderHour',
+                         'reminderMinute', 'enabled', 'note',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'title', 'type', 'amount', 'categoryName',
+                         'categoryIcon', 'categoryColorHex', 'frequency',
+                         'nextDueDate', 'reminderDaysBefore', 'reminderHour',
+                         'reminderMinute', 'enabled', 'note',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidRecurringTransaction(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(recurringId) &&
+                       isValidRecurringTransaction(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'title', 'type', 'amount', 'categoryName',
+                         'categoryIcon', 'categoryColorHex', 'frequency',
+                         'nextDueDate', 'reminderDaysBefore', 'reminderHour',
+                         'reminderMinute', 'enabled', 'note', 'updatedAt'
+                       ]);
+    }
+  }
+}
