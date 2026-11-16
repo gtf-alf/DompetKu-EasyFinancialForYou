@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "263516298236",
+    "project_id": "dompetku-e6bf4",
+    "storage_bucket": "dompetku-e6bf4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263516298236:android:0ba409f3916d8012ee3079",
+        "android_client_info": {
+          "package_name": "com.aistudio.dompetku.mrvqtz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "263516298236-06sdjql24ba9b757b8h2grn4dlqvelco.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aistudio.dompetku.mrvqtz",
+            "certificate_hash": "b91f3cc56efa40300be6e350caad4f93398644fd"
+          }
+        },
+        {
+          "client_id": "263516298236-ts15uj4uru4415miskm79b38bsb487j7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5T1d1kcIEfY5wipE8vU8dXOeAr7d2QvI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "263516298236-ts15uj4uru4415miskm79b38bsb487j7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
